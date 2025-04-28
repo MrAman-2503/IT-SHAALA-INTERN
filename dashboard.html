@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="login-container">
+    <h3>Dashboard</h3>
+   
+    <div class="stats">
+      <p><strong>Number of Users:</strong> <span id="userCount">Loading...</span></p>
+      <p><strong>Number of Stores:</strong> <span id="storeCount">Loading...</span></p>
+      <p><strong>Number of Ratings:</strong> <span id="ratingCount">Loading...</span></p>
+    </div>
+    <button id="logoutBtn">Logout</button>
+    <button id="signupBtn">Sign Up</button>
+  </div>
+
+  <script>
+    const userCountSpan = document.getElementById('userCount');
+    const storeCountSpan = document.getElementById('storeCount');
+    const ratingCountSpan = document.getElementById('ratingCount');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const signupBtn = document.getElementById('signupBtn');
+
+    async function fetchStats() {
+      try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        if (data.success) {
+          userCountSpan.textContent = data.userCount;
+          storeCountSpan.textContent = data.storeCount;
+          ratingCountSpan.textContent = data.ratingCount;
+        } else {
+          userCountSpan.textContent = 'Error';
+          storeCountSpan.textContent = 'Error';
+          ratingCountSpan.textContent = 'Error';
+        }
+      } catch (error) {
+        userCountSpan.textContent = 'Error';
+        storeCountSpan.textContent = 'Error';
+        ratingCountSpan.textContent = 'Error';
+        console.error('Error fetching stats:', error);
+      }
+    }
+
+    logoutBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    signupBtn.addEventListener('click', () => {
+      window.location.href = 'Registeration.html';
+    });
+
+    fetchStats();
+  </script>
+</body>
+</html>

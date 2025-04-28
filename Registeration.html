@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="login-container">
+        <h3>Register</h3>
+        <form id="registrationForm">
+            <input type="text" id="username" name="username" placeholder="Username" required />
+            <input type="text" id="name" name="name" placeholder="Full Name" />
+            <input type="email" id="email" name="email" placeholder="Email" required />
+            <select id="gender" name="gender">
+                <option value="" disabled selected>Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <textarea id="address" name="address" placeholder="Address"></textarea>
+            <input type="password" id="password" name="password" placeholder="Password" required />
+            <button type="submit">Register</button>
+        </form>
+        <button id="goToLoginBtn" style="margin-top: 10px;">Go to Login</button>
+        <button id="backToLoginBtn">Back to Login</button>
+        <div id="message" style="color: #ff6b6b; font-size: 14px; min-height: 20px; text-align: center; margin-top: 10px; font-weight: 600;"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registrationForm');
+        const messageDiv = document.getElementById('message');
+        const backToLoginBtn = document.getElementById('backToLoginBtn');
+        const goToLoginBtn = document.getElementById('goToLoginBtn');
+
+        backToLoginBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        goToLoginBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = form.username.value.trim();
+            const name = form.name.value.trim();
+            const email = form.email.value.trim();
+            const gender = form.gender.value;
+            const address = form.address.value.trim();
+            const password = form.password.value;
+
+            // Basic client-side validation
+            if (!username) {
+                messageDiv.style.color = '#ff6b6b';
+                messageDiv.textContent = 'Username is required.';
+                return;
+            }
+            if (!email) {
+                messageDiv.style.color = '#ff6b6b';
+                messageDiv.textContent = 'Email is required.';
+                return;
+            }
+            // Simple email format check
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                messageDiv.style.color = '#ff6b6b';
+                messageDiv.textContent = 'Please enter a valid email address.';
+                return;
+            }
+            if (!password) {
+                messageDiv.style.color = '#ff6b6b';
+                messageDiv.textContent = 'Password is required.';
+                return;
+            }
+            if (password.length < 6) {
+                messageDiv.style.color = '#ff6b6b';
+                messageDiv.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+
+            try {
+                // Submit registration data to the new moderator server
+                const response = await fetch('http://localhost:4000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, name, email, gender, address }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    messageDiv.style.color = 'lightgreen';
+                    messageDiv.textContent = 'Registration successful! Your data has been saved.';
+                    // Save registration info in localStorage for UI persistence
+                    localStorage.setItem('registeredUser', JSON.stringify({ username, name, email, gender, address }));
+                    form.reset();
+                    // Redirect to login page after registration
+                    setTimeout(() => {
+                      window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    messageDiv.style.color = '#ff6b6b';
+                    messageDiv.textContent = data.message || 'Registration failed.';
+                }
+            } catch (error) {
+                messageDiv.style.color = '#ff6b6b';
+                messageDiv.textContent = 'An error occurred during registration.';
+                console.error('Registration error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="login-container">
+    <h3>Login</h3>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <div class="info-text" id="password-info">Password must be at least 6 characters.</div>
+
+    <div id="registration-fields" style="display:none;">
+      <input type="text" id="name" placeholder="Full Name" />
+      <input type="email" id="email" placeholder="Email" />
+      <select id="gender">
+        <option value="" disabled selected>Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+      <textarea id="address" placeholder="Address"></textarea>
+    </div>
+
+    <label class="remember-me">
+      <input type="checkbox" id="remember-me" />
+      Remember me
+    </label>
+    <button id="login-btn">Login</button>
+    <button id="register-btn">Register</button>
+    <div id="login-message"></div>
+  </div>
+
+  <script>
+    const registerBtn = document.getElementById('register-btn');
+    registerBtn.addEventListener('click', () => {
+      window.location.href = 'Registeration.html';
+    });
+  </script>
+
+  <div id="rating-container" style="display:none;">
+    <h3>Rate [Store Name]</h3>
+    <div class="star-rating">
+      <span class="star" data-value="1">&#9734;</span>
+      <span class="star" data-value="2">&#9734;</span>
+      <span class="star" data-value="3">&#9734;</span>
+      <span class="star" data-value="4">&#9734;</span>
+      <span class="star" data-value="5">&#9734;</span>
+    </div>
+    <textarea id="rating-comment" placeholder="Optional: Share your experience"></textarea>
+    <button id="submit-rating-btn">Submit Rating</button>
+    <div id="rating-message"></div>
+  </div>
+
+  <script>
+    const registerBtn = document.getElementById('register-btn');
+    registerBtn.addEventListener('click', () => {
+      window.location.href = 'Registeration.html';
+    });
+
+    const loginContainer = document.getElementById('login-container');
+    const ratingContainer = document.getElementById('rating-container');
+    const loginMessage = document.getElementById('login-message');
+    const stars = document.querySelectorAll('.star-rating .star');
+    const commentInput = document.getElementById('rating-comment');
+    const submitButton = document.getElementById('submit-rating-btn');
+    const ratingMessage = document.getElementById('rating-message');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('login-btn');
+
+    let currentRating = 0;
+    let currentUser = null;
+    const storeId = 0; // Default store id
+
+    stars.forEach(star => {
+      star.addEventListener('click', function() {
+        currentRating = parseInt(this.dataset.value);
+        highlightStars(currentRating);
+      });
+    });
+
+    function highlightStars(rating) {
+      stars.forEach(star => {
+        if (parseInt(star.dataset.value) <= rating) {
+          star.innerHTML = '&#9733;'; // Filled star
+        } else {
+          star.innerHTML = '&#9734;'; // Empty star
+        }
+      });
+    }
+
+    loginBtn.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+      const rememberMe = document.getElementById('remember-me').checked;
+      if (!username || !password) {
+        loginMessage.textContent = 'Please enter username and password.';
+        return;
+      }
+      // For demo, redirect to dashboard.html on login button click
+      // Remove below block if actual login API is used
+      window.location.href = 'system-Admin.html';
+    });
+
+    // On page load, pre-fill username if saved
+    window.addEventListener('load', () => {
+      const savedUsername = localStorage.getItem('savedUsername');
+      if (savedUsername) {
+        usernameInput.value = savedUsername;
+        document.getElementById('remember-me').checked = true;
+      }
+    });
+
+    submitButton.addEventListener('click', function() {
+      if (!currentUser) {
+        ratingMessage.textContent = 'Please login first.';
+        return;
+      }
+      if (currentRating === 0) {
+        ratingMessage.textContent = 'Please select a rating.';
+        return;
+      }
+
+      const comment = commentInput.value;
+
+      fetch(`/api/stores/${storeId}/rate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          rating_value: currentRating,
+          comment: comment,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          ratingMessage.textContent = 'Rating submitted successfully!';
+          commentInput.value = '';
+          currentRating = 0;
+          highlightStars(0);
+        } else {
+          ratingMessage.textContent = 'Failed to submit rating.';
+        }
+      })
+      .catch(error => {
+        console.error('Error submitting rating:', error);
+        ratingMessage.textContent = 'An error occurred.';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Select User Type</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px 50px;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(8.5px);
+      -webkit-backdrop-filter: blur(8.5px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      text-align: center;
+      width: 320px;
+    }
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: 1.2px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .option {
+      margin: 15px 0;
+      padding: 18px;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      user-select: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .option:hover {
+      background: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+      transform: translateY(-3px);
+    }
+    .option.selected {
+      background-color: #4a90e2;
+      border-color: #4a90e2;
+      box-shadow: 0 8px 20px rgba(74, 144, 226, 0.6);
+      color: #fff;
+      transform: translateY(-5px);
+    }
+    button {
+      margin-top: 30px;
+      padding: 12px 25px;
+      font-size: 18px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      background-color: #4a90e2;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 6px 15px rgba(74, 144, 226, 0.5);
+    }
+    button:disabled {
+      background-color: #a0a0a0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button:hover:not(:disabled) {
+      background-color: #357ABD;
+      box-shadow: 0 8px 20px rgba(53, 122, 189, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Select Your User Type</h2>
+    <div id="admin" class="option" tabindex="0" role="button" aria-pressed="false">Admin</div>
+    <div id="user" class="option" tabindex="0" role="button" aria-pressed="false">User</div>
+    <div id="storeOwner" class="option" tabindex="0" role="button" aria-pressed="false">Store Owner (Admin)</div>
+    <button id="continueBtn" disabled>Continue</button>
+  </div>
+
+  <script>
+    const options = document.querySelectorAll('.option');
+    const continueBtn = document.getElementById('continueBtn');
+    let selectedOption = null;
+
+    options.forEach(option => {
+      option.addEventListener('click', () => {
+        options.forEach(opt => {
+          opt.classList.remove('selected');
+          opt.setAttribute('aria-pressed', 'false');
+        });
+        option.classList.add('selected');
+        option.setAttribute('aria-pressed', 'true');
+        selectedOption = option.id;
+        continueBtn.disabled = false;
+      });
+      option.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          option.click();
+        }
+      });
+    });
+
+    continueBtn.addEventListener('click', () => {
+      if (!selectedOption) return;
+      // Redirect to main dashboard page after selection
+      window.location.href = 'system-Admin.html';
+    });
+  </script>
+</body>
+</html>

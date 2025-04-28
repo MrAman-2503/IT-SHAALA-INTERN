@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@tailwindcss/browser@latest"></script>
+    <style>
+        /* Custom styles for toast messages */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1rem;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+
+        .toast-warning {
+            background-color: #f39c12;
+        }
+
+        .toast-info {
+            background-color: #3498db;
+        }
+
+        .toast-success {
+            background-color: #2ecc71;
+        }
+
+        .toast.fade-out {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 200px 1fr; /* Sidebar width and main content width */
+    min-height: 100vh;
+}
+
+.dashboard-header {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    grid-column: 1 / 3; /* Spans across both columns */
+    text-align: center;
+}
+
+.dashboard-sidebar {
+    background-color: #ddd;
+    padding: 20px;
+}
+
+.dashboard-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard-sidebar li {
+    margin-bottom: 10px;
+}
+
+.dashboard-sidebar a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.dashboard-sidebar a:hover {
+    background-color: #ccc;
+}
+
+.dashboard-content {
+    padding: 20px;
+}
+
+.user-management h2 {
+    margin-top: 0;
+}
+
+.user-actions {
+    margin-bottom: 20px;
+}
+
+#addUserBtn {
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+#addUserBtn:hover {
+    background-color: #4cae4c;
+}
+
+/* Modal Styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    border-radius: 5px;
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#addUserForm label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#addUserForm input[type=text],
+#addUserForm input[type=email],
+#addUserForm select {
+    width: calc(100% - 12px);
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#addUserForm button[type=submit] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+#addUserForm button[type=submit]:hover {
+    background-color: #0056b3;
+}
+
+#userList {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+#userList h3 {
+    margin-top: 0;
+}
+
+.user-item {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-details {
+    flex-grow: 1;
+}
+
+.user-actions button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+
+.user-actions button:hover {
+    background-color: #c82333;
+}
+    </style>
+</head>
+<body class="bg-gray-100 font-inter">
+    <div class="flex h-screen">
+        <aside class="w-64 bg-white shadow-md">
+            <div class="p-6">
+                <h1 class="text-2xl font-semibold text-gray-800">Dashboard</h1>
+            </div>
+            <nav class="px-4">
+                <div class="py-2">
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Overview</a>
+                </div>
+                <div class="py-2">
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Products</a>
+                </div>
+                <div class="py-2">
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Orders</a>
+                </div>
+                <div class="py-2">
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Customers</a>
+                </div>
+                <div class="py-2">
+                    <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md">Settings</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-8">
+            <header class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-semibold text-gray-800">Welcome, Admin</h2>
+                <div class="flex items-center space-x-4">
+                    <input type="text" placeholder="Search..." class="px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md" id="create-product-button">Create Product</button>
+                </div>
+            </header>
+
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white shadow-md rounded-md p-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Revenue</h3>
+                    <p class="text-2xl font-bold text-green-500">$45,231.89</p>
+                </div>
+                <div class="bg-white shadow-md rounded-md p-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Orders</h3>
+                    <p class="text-2xl font-bold text-blue-500">5,421</p>
+                </div>
+                <div class="bg-white shadow-md rounded-md p-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Customers</h3>
+                    <p class="text-2xl font-bold text-purple-500">12,345</p>
+                </div>
+            </section>
+
+            <section class="bg-white shadow-md rounded-md p-6">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">Recent Products</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full leading-normal shadow-md rounded-lg overflow-hidden">
+                        <thead class="bg-gray-200 text-gray-700">
+                            <tr>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                                    Product
+                                </th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                                    Price
+                                </th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                                    Inventory
+                                </th>
+                                 <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            <tr>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <div class="flex items-center">
+                                        <div class="ml-3">
+                                            <p class="text-gray-900 whitespace-no-wrap">
+                                                Product A
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        $25.99
+                                    </p>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        150
+                                    </p>
+                                </td>
+                                 <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded-md text-xs mr-2 edit-button" data-product-id="1">Edit</button>
+                                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded-md text-xs delete-button" data-product-id="1">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <div class="flex items-center">
+                                        <div class="ml-3">
+                                            <p class="text-gray-900 whitespace-no-wrap">
+                                                Product B
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        $19.99
+                                    </p>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        230
+                                    </p>
+                                </td>
+                                 <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                     <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded-md text-xs mr-2 edit-button" data-product-id="2">Edit</button>
+                                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded-md text-xs delete-button" data-product-id="2">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <div class="flex items-center">
+                                        <div class="ml-3">
+                                            <p class="text-gray-900 whitespace-no-wrap">
+                                                Product C
+                                            </p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        $49.99
+                                    </p>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <p class="text-gray-900 whitespace-no-wrap">
+                                        50
+                                    </p>
+                                </td>
+                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                    <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded-md text-xs mr-2 edit-button" data-product-id="3">Edit</button>
+                                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded-md text-xs delete-button" data-product-id="3">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="fixed z-10 inset-0 overflow-y-auto hidden" id="product-modal">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h2 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Add New Product
+                            </h2>
+                            <form id="product-form" class="mt-4 space-y-4">
+                                <div>
+                                    <label for="product-name" class="block text-gray-700 text-sm font-bold mb-2">Product Name</label>
+                                    <input type="text" id="product-name" placeholder="Product Name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div>
+                                    <label for="product-price" class="block text-gray-700 text-sm font-bold mb-2">Price</label>
+                                    <input type="number" id="product-price" min="0" placeholder="Price" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div>
+                                    <label for="product-inventory" class="block text-gray-700 text-sm font-bold mb-2">Inventory</label>
+                                    <input type="number" id="product-inventory" min="0" placeholder="Inventory" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 foc```html
+<!-- Add a new section for user management -->
+<section class="bg-white shadow-md rounded-md p-6">
+    <h3 class="text-2xl font-semibold text-gray-800 mb-4">User Management</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full leading-normal shadow-md rounded-lg overflow-hidden">
+            <thead class="bg-gray-200 text-gray-700">
+                <tr>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        User ID
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        Name
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        Email
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                <!-- Add user data here -->
+            </tbody>
+        </table>
+    </div>
+    <button id="addUserBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Add User</button>
+    <!-- Add user form modal -->
+    <div class="fixed z-10 inset-0 overflow-y-auto hidden" id="user-modal">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h2 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Add New User
+                            </h2>
+                            <form id="user-form" class="mt-4 space-y-4">
+                                <div>
+                                    <label for="user-name" class="block text-gray-700 text-sm font-bold mb-2">Name</label>
+                                    <input type="text" id="user-name" placeholder="Name" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div>
+                                    <label for="user-email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                                    <input type="email" id="user-email" placeholder="Email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Add User
+                    </button>
+                    <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+``````html
+<!-- Add a new section for user management -->
+<section class="bg-white shadow-md rounded-md p-6">
+    <h3 class="text-2xl font-semibold text-gray-800 mb-4">User Management</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full leading-normal shadow-md rounded-lg overflow-hidden">
+            <thead class="bg-gray-200 text-gray-700">
+                <tr>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        User ID
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        Username
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        Email
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                <!-- Add user data here -->
+            </tbody>
+        </table>
+    </div>
+    <button id="addUserBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Add User</button>
+    <!-- Add user form modal -->
+    <div class="fixed z-10 inset-0 overflow-y-auto hidden" id="user-modal">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h2 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Add New User
+                            </h2>
+                            <form id="user-form" class="mt-4 space-y-4">
+                                <div>
+                                    <label for="username" class="block text-gray-700 text-sm font-bold mb-2">Username</label>
+                                    <input type="text" id="username" placeholder="Username" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                                    <input type="email" id="email" placeholder="Email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Add User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+```

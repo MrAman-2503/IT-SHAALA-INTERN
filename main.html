@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Store Registration Platform</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="login-container">
+    <h3>Register a Store</h3>
+    <form id="storeRegistrationForm">
+      <input type="text" id="storeName" name="storeName" placeholder="Store Name" required />
+      <select id="category" name="category" required>
+        <option value="" disabled selected>Select Category</option>
+        <option value="Hotel">Hotel</option>
+        <option value="Lodging">Lodging</option>
+        <option value="Restaurant">Restaurant</option>
+        <option value="Shop">Shop</option>
+        <option value="Other">Other</option>
+      </select>
+      <textarea id="description" name="description" placeholder="Description"></textarea>
+      <button type="submit">Register Store</button>
+    </form>
+    <div id="message" style="color: #ff6b6b; font-weight: 600; margin-top: 10px; text-align: center;"></div>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <script>
+    const form = document.getElementById('storeRegistrationForm');
+    const messageDiv = document.getElementById('message');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const storeName = form.storeName.value.trim();
+      const category = form.category.value;
+      const description = form.description.value.trim();
+
+      if (!storeName || !category) {
+        messageDiv.textContent = 'Please fill in all required fields.';
+        return;
+      }
+
+      try {
+        // Placeholder API call - to be implemented in backend
+        const response = await fetch('/api/stores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storeName, category, description }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          messageDiv.style.color = 'lightgreen';
+          messageDiv.textContent = 'Store registered successfully!';
+    form.reset();
+        } else {
+          messageDiv.style.color = '#ff6b6b';
+          messageDiv.textContent = data.message || 'Store registration failed.';
+        }
+      } catch (error) {
+        messageDiv.style.color = '#ff6b6b';
+        messageDiv.textContent = 'An error occurred during store registration.';
+        console.error('Store registration error:', error);
+      }
+    });
+
+    // Redirect to dashboard after successful registration
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      // Wait for previous submit handler to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      window.location.href = 'dashboard.html';
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>
